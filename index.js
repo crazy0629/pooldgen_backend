@@ -37,6 +37,24 @@ app.get("/", (req, res, next) => {
   res.send("Hello world!");
 });
 
+app.post("/get-challenge-by-id", (req, res, next) => {
+  console.log(123, req.body);
+  res.send("Hello world!");
+});
+
+app.post("/start-match", (req, res, next) => {
+  console.log(234, req.body);
+  res.send("Hello world!");
+});
+
+app.post("/submit-match-result", (req, res, next) => {
+  const match_id = req.body.match_id;
+  const result = req.body.result;
+  console.log(345, req.body);
+  res.send("Hello world!");
+});
+
+
 app.post("/api/v1/auth/twitter/reverse", (req, res, next) => {
   console.log("consumer key => ", process.env.consumerKey);
   console.log("consumer secret => ", process.env.consumerSecret);
