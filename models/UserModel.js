@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
   user_id: {
     type: String
   },
+  total_score: { type: Number, default: 0 },
   state: {
     follow: {
         type: Boolean,
@@ -16,7 +17,8 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
-  }
+  },
+  role: { type: Number, enum: [0, 1], default: 1 }, //admin: 0, user: 1
 });
 
 const UserModel = mongoose.model("user", UserSchema);

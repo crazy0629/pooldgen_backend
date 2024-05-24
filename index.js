@@ -7,6 +7,7 @@ const axios = require("axios");
 const { connectMongoDB } = require("./config/index");
 
 const UserModel = require("./models/UserModel");
+const BonusModel = require("./models/BonusModel");
 
 dotenv.config();
 
@@ -127,9 +128,9 @@ app.post("/api/v1/auth/twitter", async (req, res, next) => {
 
       if (user) {
         if (user.state.follow && user.state.tweeted) {
-          res.json({verify: true, screen_name, user_id});
+          res.json({verify: true, screen_name, user_id, total_score: user.total_score, role: user.role });
         } else {
-          res.json({verify: false, screen_name, user_id})
+          res.json({verify: false, screen_name, user_id, total_score: user.total_score, role: user.role})
         }
       } else {
         const newUserSchema = new UserModel({
@@ -138,7 +139,7 @@ app.post("/api/v1/auth/twitter", async (req, res, next) => {
         })
         const newUser = await newUserSchema.save();
         if (newUser) {
-          res.json({verify: false, screen_name, user_id});
+          res.json({verify: false, screen_name, user_id, score: newUser.total_score, role: newUser.role});
         }
       }
     }
@@ -181,6 +182,76 @@ app.post("/api/v1/auth/tweet", async ( req, res, next) => {
     res.status(500).json({err: error})
   }
 })
+
+app.post("/api/v1/score/update-user-score", async ( req, res, next) => {
+  const { user_id, score } = req.body;
+  try {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { user_id: user_id },
+      { $inc: { total_score: score } },
+      {
+        returnDocument: "after",
+      }
+    );
+    res.json({ success: true, updatedUser });
+  } catch (error) {
+    res.status(500).json({ err: error });
+  }
+})
+
+app.get("/api/v1/score/get-bonus-points", async (req, res) => {
+
+  try {
+    const existingRecord = await BonusModel.findOne();
+
+    if (existingRecord) {
+      res.json({ success: true, bonus: existingRecord });
+    } else {
+      // Create a new record
+      const newRecord = new ScoreModel({ winning_bonus, retweet_bonus });
+      const savedRecord = await newRecord.save();
+      res.json({ success: true, bonus: savedRecord });
+    }
+  } catch (error) {
+    res.status(500).json({ err: error });
+  }
+});
+
+app.post("/api/v1/score/update-bonus-points", async (req, res) => {
+  const { winning_bonus, retweet_bonus } = req.body;
+
+  if (typeof winning_bonus !== 'number' || typeof retweet_bonus !== 'number') {
+    return res.status(400).json({ msg: "Please provide valid numbers for bonuses!" });
+  }
+
+  try {
+    const existingRecord = await BonusModel.findOne();
+
+    if (existingRecord) {
+      // Update the existing record
+      existingRecord.winning_bonus = winning_bonus;
+      existingRecord.retweet_bonus = retweet_bonus;
+      const updatedRecord = await existingRecord.save();
+      res.json({ success: true, bonus: updatedRecord });
+    } else {
+      // Create a new record
+      const newRecord = new BonusModel({ winning_bonus, retweet_bonus });
+      const savedRecord = await newRecord.save();
+      res.json({ success: true, bonus: savedRecord });
+    }
+  } catch (error) {
+    res.status(500).json({ err: error });
+  }
+});
+
+app.get("/api/v1/get-users", async (req, res) => {
+  try {
+    const users = await UserModel.find({}, 'screen_name total_score');
+    res.json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ err: error });
+  }
+});
 
 const port = 2088;
 app.listen(port, () => {
