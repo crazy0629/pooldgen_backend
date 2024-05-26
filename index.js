@@ -200,7 +200,7 @@ app.post("/api/v1/score/update-user-score", async ( req, res, next) => {
 })
 
 app.get("/api/v1/score/get-bonus-points", async (req, res) => {
-
+  
   try {
     const existingRecord = await BonusModel.findOne();
 
@@ -208,7 +208,7 @@ app.get("/api/v1/score/get-bonus-points", async (req, res) => {
       res.json({ success: true, bonus: existingRecord });
     } else {
       // Create a new record
-      const newRecord = new ScoreModel({ winning_bonus, retweet_bonus });
+      const newRecord = new BonusModel({ winning_bonus: 0, retweet_bonus: 0 });
       const savedRecord = await newRecord.save();
       res.json({ success: true, bonus: savedRecord });
     }
