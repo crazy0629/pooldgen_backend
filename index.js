@@ -403,7 +403,7 @@ app.post("/api/v1/settweet", async (req, res) => {
         },
         headers: {
           "X-RapidAPI-Key":
-            "b5e3595cd2msh49819d910693237p181883jsne209d54b875c",
+            process.env.RAPID_API_KEY,
           "X-RapidAPI-Host": "twitter-api45.p.rapidapi.com",
         },
       };
